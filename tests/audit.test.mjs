@@ -1,0 +1,51 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {auditProvenance} from '../src/audit.mjs';
+const asOf='2026-11-14T12:00:00Z';
+const source=(id='s',extra={})=>({id,title:'Fictional guide',url:'https://example.org/guide',excerpt:'Evidence contains the required passage for a claim.',publishedAt:'2026-11-13T12:00:00Z',retrievedAt:'2026-11-14T10:00:00Z',...extra});
+const claim=(id='c',citations=[{sourceId:'s',quote:'the required passage'}])=>({id,text:'A fictional check of evidence.',citations});
+const run=(sources=[source()],claims=[claim()],extras={})=>auditProvenance({asOf,maxAgeDays:365,sources,claims,...extras});
+const has=(r,code)=>r.findings.some(f=>f.code===code);
+test('good structural links yield traceability not proof',()=>{const r=run();assert.equal(r.status,'STRUCTURALLY_TRACEABLE');assert.match(r.limitations,/Does not visit URLs/);});
+test('empty inventory supported',()=>{const r=run([],[]);assert.equal(r.status,'STRUCTURALLY_TRACEABLE');assert.equal(r.summary.sources,0);});
+test('uncited claim needs review',()=>{const r=run([source()],[claim('c',[])]);assert.ok(has(r,'UNCITED_CLAIM'));assert.equal(r.status,'REVIEW_REQUIRED');});
+test('broken source ref is error',()=>{const r=run([source()],[claim('c',[{sourceId:'missing',quote:'x'}])]);assert.ok(has(r,'BROKEN_SOURCE_LINK'));assert.equal(r.status,'INVALID_REFERENCES');});
+test('insecure http source is error',()=>{const r=run([source('s',{url:'http://example.org/test'})]);assert.ok(has(r,'INVALID_SOURCE_URL'));});
+test('URL with embedded username and password is error',()=>{const r=run([source('s',{url:'https://abc:def@example.org/'})]);assert.ok(has(r,'INVALID_SOURCE_URL'));});
+test('not-a-url is error',()=>{const r=run([source('s',{url:'oops'})]);assert.ok(has(r,'INVALID_SOURCE_URL'));});
+test('source with missing title gets review',()=>{const r=run([source('s',{title:''})]);assert.ok(has(r,'MISSING_TITLE'));});
+test('empty excerpt gets review',()=>{const r=run([source('s',{excerpt:''})]);assert.ok(has(r,'EMPTY_EXCERPT'));});
+test('different quote not found in excerpt requires review',()=>{const r=run([source()],[claim('c',[{sourceId:'s',quote:'not in excerpt'}])]);assert.ok(has(r,'QUOTE_NOT_IN_EXCERPT'));});
+test('whitespace variations in excerpt match',()=>{const r=run([source('s',{excerpt:'Evidence contains the\n  required passage for a claim.'})]);assert.equal(r.status,'STRUCTURALLY_TRACEABLE');});
+test('missing quote needs review',()=>{const r=run([source()],[claim('c',[{sourceId:'s',quote:''}])]);assert.ok(has(r,'MISSING_QUOTE'));});
+test('duplicate source references are noted',()=>{const r=run([source()],[claim('c',[{sourceId:'s',quote:'required passage'},{sourceId:'s',quote:'required passage'}])]);assert.ok(has(r,'REPEATED_SOURCE_REFERENCE'));});
+test('unused source noted without block',()=>{const r=run([source(),source('unused')]);assert.ok(has(r,'UNUSED_SOURCE'));assert.equal(r.status,'STRUCTURALLY_TRACEABLE');});
+test('future published source flagged review',()=>{const r=run([source('s',{publishedAt:'2027-01-01T12:00:00Z'})]);assert.ok(has(r,'FUTURE_PUBLICATION'));});
+test('older than age threshold needs review',()=>{const r=run([source('s',{publishedAt:'2020-01-01T12:00:00Z'})]);assert.ok(has(r,'OLDER_THAN_POLICY'));});
+test('unknown published date needs review',()=>{const s=source();delete s.publishedAt;const r=run([s]);assert.ok(has(r,'PUBLICATION_DATE_UNKNOWN'));});
+test('malformed published timestamp is error',()=>{const r=run([source('s',{publishedAt:'yesterday'})]);assert.ok(has(r,'INVALID_PUBLISHED_AT'));});
+test('future retrieval needs review',()=>{const r=run([source('s',{retrievedAt:'2027-01-01T12:00:00Z'})]);assert.ok(has(r,'FUTURE_RETRIEVAL'));});
+test('bad retrieval date is error',()=>{const r=run([source('s',{retrievedAt:'today'})]);assert.ok(has(r,'INVALID_RETRIEVED_AT'));});
+test('missing retrieved at is informational',()=>{const s=source();delete s.retrievedAt;const r=run([s]);assert.ok(has(r,'RETRIEVAL_NOT_RECORDED'));});
+test('duplicate sources reject inventory',()=>assert.throws(()=>run([source(),source()]),/Duplicate source/));
+test('duplicate claims reject inventory',()=>assert.throws(()=>run([source()],[claim(),claim()]),/Duplicate claim/));
+test('invalid claim text rejected',()=>assert.throws(()=>run([source()],[{id:'c',text:'',citations:[]}]),/claim.text/));
+test('bad input shape rejected',()=>assert.throws(()=>auditProvenance({sources:[]}),/Expected/));
+test('asOf missing timezone rejected',()=>assert.throws(()=>run([source()],[claim()],{asOf:'2026-11-14T12:00:00'}),/asOf/));
+test('invalid maxAgeDays rejected',()=>assert.throws(()=>run([source()],[claim()],{maxAgeDays:-1}),/maxAgeDays/));
+test('max 100 sources supported',()=>{const r=run(Array.from({length:100},(_,i)=>source('s'+i)),[]);assert.equal(r.summary.sources,100);});
+test('101 sources rejected',()=>assert.throws(()=>run(Array.from({length:101},(_,i)=>source('s'+i)),[]),/Maximum 100/));
+test('max 200 claims supported',()=>{const r=run([source()],Array.from({length:200},(_,i)=>claim('c'+i)));assert.equal(r.summary.claims,200);});
+test('too many citations per claim rejected',()=>assert.throws(()=>run([source()],[claim('c',Array.from({length:11},()=>({sourceId:'s',quote:''})))]),/At most 10/));
+test('invalid citation id rejected',()=>assert.throws(()=>run([source()],[claim('c',[{sourceId:'?',quote:''}])]),/citation.sourceId/));
+test('JSON and plain object inputs produce same output',()=>{const value={asOf,maxAgeDays:365,sources:[source()],claims:[claim()]};assert.deepEqual(auditProvenance(value),auditProvenance(JSON.stringify(value)));});
+test('output does not include supplied source excerpts',()=>{
+ const r=run([source()]);assert.equal(JSON.stringify(r).includes('Evidence contains the required passage'),false);
+});
+
+test('claim row reflects linked source invalid URL',()=>{
+ const r=run([source('s',{url:'not-an-https-url'})]);
+ assert.equal(r.claims[0].traceability,'BROKEN_LINKS');
+});
+test('claim row reflects linked source freshness review',()=>{
+ const r=run([source('s',{publishedAt:'2020-01-01T12:00:00Z'})]);
+ assert.equal(r.claims[0].traceability,'REVIEW_REQUIRED');
+});

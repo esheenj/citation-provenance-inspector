@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0c1219">
+<meta name="description" content="A local-first claim-to-source citation traceability workbench for inspecting references, source dates, and excerpt matches without network requests.">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'none'; img-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Citation Provenance Inspector — Esheen Labs</title>
+<link rel="stylesheet" href="./style.css"><script type="module" src="./app.mjs"></script>
+</head><body>
+<a class="skip" href="#workbench">Skip to inspector</a>
+<div class="shell">
+<header class="masthead">
+<a href="https://github.com/esheenj/citation-provenance-inspector" class="brand"><span class="mark">Σ</span><span>SIGMA <b>/ LABS</b><small>OPEN INTELLIGENCE</small></span></a>
+<div class="meta"><span class="live-dot"></span> LOCAL-FIRST EVIDENCE TOOL <span class="edition">OSS / 016</span></div>
+</header>
+<main>
+<section class="hero">
+<div class="eyebrow"><span class="bar"></span> RESEARCH INTELLIGENCE / PROVENANCE</div>
+<h1>Every claim<br><em>needs a trail.</em></h1>
+<p>Bring your claims and the sources you say support them. Review broken references, missing quotes, freshness gaps and unused material—without uploading data or mistaking a citation for proof.</p>
+<div class="pills"><span>NO FETCHING</span><span>NO FACT-CHECK CLAIM</span><span>DETERMINISTIC RESULTS</span></div>
+</section>
+<section class="workspace" id="workbench" aria-labelledby="work-title">
+<div class="section-top"><div><span class="overline">01 / SOURCE RECORD</span><h2 id="work-title">Traceability inspection</h2></div><button id="restore" class="quiet" type="button">Restore fictional example ↗</button></div>
+<div class="editor">
+<div class="editor-top"><label for="scenario">Claims and sources JSON</label><span>STRUCTURED INPUT / 1 MiB MAX</span></div>
+<textarea id="scenario" spellcheck="false" aria-describedby="input-hint"></textarea>
+<div class="editor-actions"><p id="input-hint">Provide a fixed assessment date, source records and claim-to-source citations. Excerpts stay inside this browser.</p><button id="inspect" type="button" class="primary">Inspect provenance <span aria-hidden="true">→</span></button></div>
+</div>
+</section>
+<section class="report" aria-labelledby="report-title">
+<div class="section-top"><div><span class="overline">02 / FINDINGS</span><h2 id="report-title">Traceability report</h2></div><span id="status" role="status" aria-live="polite" class="status">READY</span></div>
+<div class="stats">
+<div><span>CLAIMS</span><strong id="claimCount">—</strong></div>
+<div><span>SOURCES</span><strong id="sourceCount">—</strong></div>
+<div><span>LINK ERRORS</span><strong id="errors">—</strong></div>
+<div><span>MANUAL REVIEW</span><strong id="reviews">—</strong></div>
+<div><span>NOTES</span><strong id="notes">—</strong></div>
+</div>
+<p id="summary" class="summary">Inspect the sample to reveal missing citations, excerpt comparisons and source provenance notes.</p>
+<div class="subhead"><h3>Claims</h3><span>TRACEABILITY ONLY</span></div>
+<ol class="claims" id="claims" aria-live="polite"></ol>
+<div class="subhead"><h3>Findings</h3><span>STRUCTURED ISSUES</span></div>
+<ol class="findings" id="findings" aria-live="polite"></ol>
+<div class="report-foot"><span>STRUCTURAL INSPECTION ≠ VERIFIED TRUTH</span><button type="button" id="export" class="quiet" disabled>Export JSON report ↓</button></div>
+</section>
+<section class="scope"><div><span class="overline">03 / THE PROVENANCE BOUNDARY</span><h2>A reference is<br>not a verdict.</h2></div><p>This workbench borrows the idea of derivation and attribution from provenance modeling, but does not implement W3C PROV-O itself. It cannot establish whether a webpage exists, who authored it, whether a quotation is authentic, or whether a passage entails a claim. External sources, contradictory evidence and real-world citation quality still need human verification.</p></section>
+</main>
+<footer><span>© 2026 ESHEEN LABS · ORIGINAL MIT SOFTWARE</span><div><a href="https://www.w3.org/TR/prov-o/" rel="noopener noreferrer">W3C PROV-O</a><a href="https://github.com/esheenj/citation-provenance-inspector" rel="noopener noreferrer">Source &amp; tests ↗</a></div></footer>
+</div></body></html>

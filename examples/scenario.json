@@ -1,0 +1,14 @@
+{
+  "asOf":"2026-11-14T12:00:00Z",
+  "maxAgeDays":365,
+  "sources":[
+    {"id":"spec","title":"Fictional API policy notes","url":"https://example.org/fictional/spec","publishedAt":"2026-10-01T12:00:00Z","retrievedAt":"2026-11-13T12:00:00Z","excerpt":"The sample integration records a unique request identifier and an outcome for each completed operation."},
+    {"id":"audit","title":"Fictional audit workbook","url":"https://example.org/fictional/audit","publishedAt":"2026-09-01T12:00:00Z","retrievedAt":"2026-11-13T12:00:00Z","excerpt":"Each fictional event has a stable ID and an explicit status."},
+    {"id":"unlinked","title":"Unused fictional note","url":"https://example.org/fictional/unlinked","publishedAt":"2026-10-10T12:00:00Z","excerpt":"This sample is not cited."}
+  ],
+  "claims":[
+    {"id":"c1","text":"The fictional integration tracks request IDs.","citations":[{"sourceId":"spec","quote":"records a unique request identifier"}]},
+    {"id":"c2","text":"The fictional audit workbook records stable event IDs.","citations":[{"sourceId":"audit","quote":"Each fictional event has a stable ID"}]},
+    {"id":"c3","text":"An uncited example claim needs further evidence.","citations":[]}
+  ]
+}
