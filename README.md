@@ -1,4 +1,9 @@
-# Citation Provenance Inspector
+# Citation Trace Inspector
+
+**Product identity:** **Citation Trace Inspector** is the public display name for this offline claim-to-source *structural traceability* workbench. Inspect supplied source identifiers, HTTPS URL syntax, excerpt matching, age thresholds and uncited claims through the existing browser and CLI.
+
+**For:** AI evaluation developers, technical writers and engineering teams reviewing synthetic evidence records. This tool does not visit webpages, authenticate sources, judge whether a quote logically supports a claim or certify factual accuracy. The repository slug, package, input contracts and Pages URL are unchanged.
+
 
 **Every claim needs a trail.**
 
